@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Threadstreet</title>
+
+  <!-- Leaflet: the library that draws the map and handles dragging/zooming. -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- Leaflet draws the map inside this box. -->
+  <div id="map"></div>
+
+  <header class="topbar">
+    <!-- The three dots that open the side panel. -->
+    <button id="panel-toggle" class="dots" type="button"
+            aria-label="Open panel" aria-expanded="false" aria-controls="panel">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="topbar-text">
+      <h1>Threadstreet</h1>
+      <p id="status">Loading…</p>
+    </div>
+  </header>
+
+  <!--
+    Panel one: the list of threads.
+
+    Built as a stack of <section> blocks so account, settings and filters can be
+    added later without rearranging what is already here.
+  -->
+  <aside id="panel" class="panel" hidden aria-label="Threads">
+    <div class="panel-head">
+      <h2>Threads</h2>
+      <button id="panel-close" class="icon-btn" type="button" aria-label="Close panel">&times;</button>
+    </div>
+
+    <section class="panel-section">
+      <ul id="thread-list" class="panel-list"></ul>
+    </section>
+
+    <!-- Later: account, settings, filters. Add another <section> here. -->
+  </aside>
+
+  <!--
+    Panel two: one thread's history. Opens to the right of the list.
+  -->
+  <aside id="thread-panel" class="thread-panel" hidden aria-label="Thread">
+    <div class="panel-head">
+      <button id="thread-back" class="icon-btn" type="button" aria-label="Back to threads">&lsaquo;</button>
+      <div class="thread-heading">
+        <h2 id="thread-title"></h2>
+        <p id="thread-meta" class="thread-meta"></p>
+      </div>
+      <button id="thread-delete" class="icon-btn icon-danger" type="button" aria-label="Delete this thread">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M4 7h16M10 4h4M9 7v12M15 7v12M6 7l1 13h10l1-13"
+                fill="none" stroke="currentColor" stroke-width="1.7"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button id="thread-close" class="icon-btn" type="button" aria-label="Close thread">&times;</button>
+    </div>
+
+    <section class="panel-section">
+      <ol id="thread-messages" class="thread-messages"></ol>
+    </section>
+
+    <!-- Adding to the thread. Turns into a reply when a Reply button is used. -->
+    <div class="thread-reply">
+      <p id="replying-to" class="replying-to" hidden>
+        <span id="replying-to-text"></span>
+        <button id="replying-cancel" type="button" class="link-btn">cancel</button>
+      </p>
+
+      <textarea id="thread-input" class="composer-text" rows="2" maxlength="280"
+                placeholder="Add to this thread…"></textarea>
+
+      <div class="composer-actions">
+        <button id="thread-send" type="button" class="btn btn-primary" disabled>Send</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Dimmed backdrop behind the panels; clicking it closes them. -->
+  <div id="panel-backdrop" class="panel-backdrop" hidden></div>
+
+  <!-- Find me. Sits above the zoom buttons, out of the way of the panels. -->
+  <button id="locate" class="locate" type="button" aria-label="Find my location">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <circle cx="12" cy="12" r="3.5" fill="currentColor"/>
+      <circle cx="12" cy="12" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M12 1v3M12 20v3M1 12h3M20 12h3" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round"/>
+    </svg>
+  </button>
+
+  <p id="hint" class="hint">Tap the map to start a thread</p>
+
+  <!-- Short-lived messages, e.g. why locating failed. -->
+  <p id="toast" class="toast" hidden></p>
+
+  <!-- Asked when tapping a spot with no thread on it yet. -->
+  <div id="new-thread" class="modal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="new-thread-heading">
+      <h2 id="new-thread-heading">Start a thread here?</h2>
+      <p class="modal-where">at <span id="new-thread-where"></span></p>
+
+      <label class="field-label" for="new-thread-title">Name</label>
+      <input id="new-thread-title" class="field" type="text" maxlength="80"
+             placeholder="What is this place?" />
+
+      <label class="field-label" for="new-thread-body">First message</label>
+      <textarea id="new-thread-body" class="field" rows="3" maxlength="280"
+                placeholder="Start it off…"></textarea>
+
+      <!-- Starting a thread requires sharing your location. -->
+      <p id="new-thread-locating" class="modal-note">Checking your location…</p>
+
+      <!-- Shown when the tapped spot is out of range: snaps the pin to you. -->
+      <p class="modal-note">
+        <button id="new-thread-use-mine" type="button" class="link-btn" hidden>
+          Put the pin where I am
+        </button>
+      </p>
+
+      <p id="new-thread-error" class="modal-error" hidden></p>
+
+      <div class="composer-actions">
+        <button id="new-thread-cancel" type="button" class="btn btn-quiet">Cancel</button>
+        <button id="new-thread-create" type="button" class="btn btn-primary" disabled>Create thread</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

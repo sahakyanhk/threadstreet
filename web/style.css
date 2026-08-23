@@ -1,0 +1,509 @@
+/* Threadstreet -- layout and looks. Nothing here affects how the app works. */
+
+:root {
+  --ink: #16181d;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --paper: #ffffff;
+  --accent: #1d4ed8;
+  --shadow: 0 6px 24px rgba(16, 18, 25, 0.16);
+  --panel-width: 320px;
+}
+
+* { box-sizing: border-box; }
+
+/**
+ * Anything marked hidden in the HTML must actually be hidden.
+ *
+ * Browsers hide [hidden] elements with a built-in `display: none` rule, but any
+ * rule we write ourselves outranks a built-in one. Several panels below set
+ * `display: flex`, which silently cancelled `hidden` and left them on screen
+ * permanently. This one line puts that beyond argument.
+ */
+[hidden] { display: none !important; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+}
+
+/* The map must have a real height or Leaflet renders a zero-pixel box --
+   the single most common thing to get wrong when starting out. */
+#map {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  cursor: crosshair;   /* the map is tappable -- say so */
+}
+
+/* Leaflet's own zoom buttons, now moved to the bottom-left. */
+.leaflet-bottom.leaflet-left { margin-bottom: 8px; margin-left: 8px; }
+
+/* --------------------------------------------------------------- topbar -- */
+
+.topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.96), rgba(255,255,255,0));
+  pointer-events: none;   /* let map drags pass through the empty space */
+}
+
+.topbar-text { pointer-events: none; }
+
+.topbar h1 {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+.topbar p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* The three dots that open the panel. */
+.dots {
+  pointer-events: auto;   /* ...but this is clickable */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(16, 18, 25, 0.12);
+}
+
+.dots span {
+  display: block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+.dots:hover { background: #f9fafb; }
+
+/* ---------------------------------------------------------------- panel -- */
+
+.panel {
+  position: absolute;
+  z-index: 700;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--panel-width);
+  max-width: 85vw;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.panel-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 650;
+  background: rgba(16, 18, 25, 0.25);
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 10px 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.icon-btn:hover { background: #f3f4f6; color: var(--ink); }
+
+.icon-danger { color: #b91c1c; }
+.icon-danger:hover { background: #fef2f2; color: #991b1b; }
+
+/* Each panel section is a block of related things. More will be added below
+   the message list later -- account, settings, filters. */
+.panel-section {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.panel-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.panel-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.panel-item:hover { background: #f9fafb; }
+
+.panel-item-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  /* Long messages get cut off after three lines in the list. */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.panel-item-time {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.panel-empty {
+  padding: 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ------------------------------------------------------- floating bits -- */
+
+/* Find-my-location button, bottom-right, away from the zoom buttons. */
+.locate {
+  position: absolute;
+  z-index: 500;
+  right: 12px;
+  bottom: 88px;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+}
+
+.locate:hover { background: #f9fafb; }
+
+.locate.is-busy {
+  color: var(--accent);
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse { 50% { opacity: 0.4; } }
+
+.hint {
+  position: absolute;
+  z-index: 500;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 11px 20px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+  pointer-events: none;
+}
+
+.toast {
+  position: absolute;
+  z-index: 800;
+  left: 50%;
+  top: 64px;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(440px, calc(100vw - 24px));
+  margin: 0;
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.45;
+  box-shadow: var(--shadow);
+}
+
+/* --------------------------------------------------------- thread panel -- */
+
+/* Panel two, sitting immediately right of the thread list. */
+.thread-panel {
+  position: absolute;
+  z-index: 690;
+  top: 0;
+  bottom: 0;
+  left: var(--panel-width);
+  width: 360px;
+  max-width: calc(100vw - var(--panel-width));
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border-right: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.thread-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.thread-heading h2 {
+  margin: 0;
+  font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thread-meta {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* The back arrow only makes sense when the panels are stacked (narrow screens). */
+#thread-back { display: none; }
+
+.thread-messages {
+  list-style: none;
+  margin: 0;
+  padding: 12px 14px;
+}
+
+.msg {
+  padding: 8px 0 8px 10px;
+  border-left: 2px solid var(--line);
+  margin-bottom: 2px;
+}
+
+.msg-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;   /* a long unbroken string cannot widen the panel */
+}
+
+.msg-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.link-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.link-btn:hover { text-decoration: underline; }
+
+.link-danger { color: #b91c1c; }
+
+/* A message whose text is gone, kept only to hold its replies in place. */
+.msg-deleted {
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* The box for adding to the thread, pinned to the bottom of the panel. */
+.thread-reply {
+  border-top: 1px solid var(--line);
+  padding: 12px 14px;
+  background: var(--paper);
+}
+
+.replying-to {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.replying-to span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.composer-text {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.composer-text:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.composer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn {
+  padding: 9px 16px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-quiet {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:disabled {
+  background: #c7cdd9;
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------- new-thread dialog -- */
+
+.modal {
+  position: absolute;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(16, 18, 25, 0.35);
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--paper);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.modal-card h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.modal-where {
+  margin: 4px 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.field {
+  width: 100%;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.field:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.modal-note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.modal-error {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+/* Narrow screens: the two panels stack, and the thread covers the list. */
+@media (max-width: 720px) {
+  .thread-panel {
+    left: 0;
+    width: 100%;
+    max-width: 100%;
+    z-index: 710;
+  }
+
+  #thread-back { display: block; }
+  #thread-close { display: none; }
+}
